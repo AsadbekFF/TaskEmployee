@@ -1,0 +1,95 @@
+﻿<link href="~/css/site.css" rel="stylesheet" type="text/css" />
+<body>
+    <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="Index">
+        <div class="form-group">
+            <div class="col-md-10">
+                <p>Upload one or more files using this form:</p>
+                <input type="file" name="files" multiple=multiple />
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-10">
+                <button type="submit" value="Upload" name="submitButton" onclick="myFunction()">Upload</button> />
+            </div>
+        </div>
+    </form>
+    <p>
+
+    </p>
+    <form>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
+        <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+        <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+        <input type="text" id="txtSearch" name="CustomerName" />
+        <input type="hidden" id="hfText" name="CustomerId" />
+        <script>
+            $("#txtSearch").autocomplete({
+                source: function (request, response) {
+                    var param = { "prefix": request.term };
+                    $.ajax({
+                        url: '/home/autocomplete/',
+                        data: { "prefix": request.term },
+                        datatype: "json",
+                        type: "post",
+                        contenttype: "application/json; charset=utf-8",
+                        success: function (data) {
+                            response($.map(data, function (item) {
+                                return item;
+                            }))
+                        },
+                        error: function (response) {
+                            alert(response.responsetext);
+                        },
+                        failure: function (response) {
+                            alert(response.responsetext);
+                        }
+                    });
+                },
+                select: function (e, i) {
+                    $("#hfText").val(i.item.val);
+                },
+                minLength: 1
+            });
+        </script>
+        <button asp-action="Search" type="submit" class="btn btn-sm btn-primary">Search</button>
+    </form>
+    <form>
+        <table class="table" border="1">
+            <tr>
+                <td class="qwerty"><a asp-route-sortBy="PayrollNumbers" asp-action="Sort">PayrollNumbers</a></td>
+                <td class="qwerty"><a asp-route-sortBy="Name" asp-action="Sort">Name</a></td>
+                <td class="qwerty"><a asp-route-sortBy="DateOfBirth" asp-action="Sort">DateOfBirth</a></td>
+                <td class="qwerty"><a asp-route-sortBy="Telephone" asp-action="Sort">Telephone Number</a></td>
+                <td class="qwerty"><a asp-route-sortBy="Mobile" asp-action="Sort">Mobile</a></td>
+                <td class="qwerty"><a asp-route-sortBy="Address" asp-action="Sort">Address</a></td>
+                <td class="qwerty"><a asp-route-sortBy="Address2" asp-action="Sort">Address2</a></td>
+                <td class="qwerty"><a asp-route-sortBy="PostCode" asp-action="Sort">PostCode</a></td>
+                <td class="table-item"><a asp-route-sortBy="Email" asp-action="Sort">Email</a></td>
+                <td class="qwerty"><a asp-route-sortBy="StartDate" asp-action="Sort">StartDate</a></td>
+            </tr>
+        </table>
+    </form>
+    @foreach (var item in ViewBag.Employees)
+    {
+        <table class="table" border="1">
+            <tr>
+                <td class="qwerty">@item.PayrollNumbers</td>
+                <td class="qwerty">@item.Name</td>
+                <td class="qwerty">@item.DateOfBirth</td>
+                <td class="qwerty">@item.TelephoneNumber</td>
+                <td class="qwerty">@item.Mobile</td>
+                <td class="qwerty">@item.Address</td>
+                <td class="qwerty">@item.Address2</td>
+                <td class="qwerty">@item.PostCode</td>
+                <td class="table-item">@item.Email</td>
+                <td class="qwerty">@item.StartDate</td>
+            </tr>
+        </table>
+    }
+    @if(ViewData["Count"] != null)
+            {
+
+        <h2>Successfull uploads: @ViewData["Successfull"]</h2>
+        <h2>Failed uploads: @ViewData["Failed"]</h2>
+            }
+</body>
