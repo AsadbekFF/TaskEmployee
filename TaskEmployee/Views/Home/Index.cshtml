@@ -9,7 +9,7 @@
         </div>
         <div class="form-group">
             <div class="col-md-10">
-                <button type="submit" value="Upload" name="submitButton" onclick="myFunction()">Upload</button> />
+                <button type="submit" value="Upload" name="submitButton" onclick="myFunction()">Upload</button>
             </div>
         </div>
     </form>
@@ -75,14 +75,14 @@
             <tr>
                 <td class="qwerty">@item.PayrollNumbers</td>
                 <td class="qwerty">@item.Name</td>
-                <td class="qwerty">@item.DateOfBirth</td>
+                <td class="qwerty">@item.DateOfBirth.ToString(@"dd/MM/yyyy")</td>
                 <td class="qwerty">@item.TelephoneNumber</td>
                 <td class="qwerty">@item.Mobile</td>
                 <td class="qwerty">@item.Address</td>
                 <td class="qwerty">@item.Address2</td>
                 <td class="qwerty">@item.PostCode</td>
                 <td class="table-item">@item.Email</td>
-                <td class="qwerty">@item.StartDate</td>
+                <td class="qwerty">@item.StartDate.ToString(@"dd/MM/yyyy")</td>
             </tr>
         </table>
     }

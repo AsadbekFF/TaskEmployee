@@ -12,6 +12,7 @@ namespace TaskEmployee.Models
         {
             Database.EnsureCreated();
         }
+
         public DbSet<Employee> Employees { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

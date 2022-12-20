@@ -17,6 +17,7 @@ using System.Threading;
 using System.Text;
 using System.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace TaskEmployee.Controllers
 {
@@ -73,14 +74,14 @@ namespace TaskEmployee.Controllers
                         {
                             PayrollNumbers = values[0],
                             Name = values[1],
-                            DateOfBirth = values[2],
-                            TelephoneNumber = int.Parse(values[3]),
-                            Mobile = int.Parse(values[4]),
+                            DateOfBirth = DateTime.Parse(values[2]),
+                            TelephoneNumber = values[3],
+                            Mobile = values[4],
                             Address = values[5],
                             Address2 = values[6],
                             PostCode = values[7],
                             Email = values[8],
-                            StartDate = values[9]
+                            StartDate = DateTime.Parse(values[9])
                         };
 
                         dbContext.Employees.Add(employee);
@@ -98,7 +99,9 @@ namespace TaskEmployee.Controllers
         [Route("Sort")]
         public IActionResult Sort(string sortBy)
         {
+            Regex regex = new(@"(\d+)$");
             List<Employee> employees = dbContext.Employees.ToList();
+
             switch (sortBy)
             {
                 case "PayrollNumbers":
@@ -118,13 +121,13 @@ namespace TaskEmployee.Controllers
                     break;
                 case "Telephone":
                     employees = (from item in employees
-                     orderby item.TelephoneNumber ascending
+                     orderby int.Parse(regex.Match(item.TelephoneNumber).Value) ascending
                      select item).ToList();
                     break;
                 case "Mobile":
-                    employees = (from item in employees
-                     orderby item.Mobile ascending
-                     select item).ToList();
+                    employees = employees
+                        .OrderBy(x => int.Parse(regex.Match(x.TelephoneNumber).Value))
+                        .ToList();
                     break;
                 case "Address":
                     employees = (from item in employees
@@ -132,9 +135,7 @@ namespace TaskEmployee.Controllers
                      select item).ToList();
                     break;
                 case "Address2":
-                    employees = (from item in employees
-                     orderby item.Address2 ascending
-                     select item).ToList();
+                    employees = employees.OrderBy(x => x.Address2).ToList();
                     break;
                 case "PostCode":
                     employees = (from item in employees
@@ -161,28 +162,29 @@ namespace TaskEmployee.Controllers
         public IActionResult Search(string CustomerName)
         {
             CustomerName = CustomerName.ToUpperInvariant();
-            List<Employee> employees = new();
+            HashSet<Employee> employees = new();
+            
             dbContext.Employees.ForEachAsync(x =>
             {
-                if (x.PayrollNumbers.ToUpperInvariant() == CustomerName)
+                if (x.PayrollNumbers.ToUpperInvariant().StartsWith(CustomerName))
                     employees.Add(x);
-                if (x.Name.ToUpperInvariant() == CustomerName)
+                if (x.Name.ToUpperInvariant().StartsWith(CustomerName))
                     employees.Add(x);
-                if (x.DateOfBirth.ToUpperInvariant() == CustomerName)
+                if (x.DateOfBirth.ToString().ToUpperInvariant().StartsWith(CustomerName))
                     employees.Add(x);
-                if (x.TelephoneNumber.ToString() == CustomerName)
+                if (x.TelephoneNumber.ToString().StartsWith(CustomerName))
                     employees.Add(x);
-                if (x.Mobile.ToString() == CustomerName)
+                if (x.Mobile.ToString().StartsWith(CustomerName))
                     employees.Add(x);
-                if (x.Address.ToUpperInvariant() == CustomerName)
+                if (x.Address.ToUpperInvariant().StartsWith(CustomerName))
                     employees.Add(x);
-                if (x.Address2.ToUpperInvariant() == CustomerName)
+                if (x.Address2.ToUpperInvariant().StartsWith(CustomerName))
                     employees.Add(x);
-                if (x.Email.ToUpperInvariant() == CustomerName)
+                if (x.Email.ToUpperInvariant().StartsWith(CustomerName))
                     employees.Add(x);
-                if (x.PostCode.ToUpperInvariant() == CustomerName)
+                if (x.PostCode.ToUpperInvariant().StartsWith(CustomerName))
                     employees.Add(x);
-                if (x.StartDate.ToUpperInvariant() == CustomerName)
+                if (x.StartDate.ToString().ToUpperInvariant().StartsWith(CustomerName))
                     employees.Add(x);
             });
 
@@ -192,34 +194,34 @@ namespace TaskEmployee.Controllers
 
         public JsonResult AutoComplete(string prefix)
         {
-            HashSet<string> auto = new();
+            HashSet<string> autoComplete = new();
             prefix = prefix.ToUpperInvariant();
 
             Task.WaitAll(dbContext.Employees.ForEachAsync(x =>
             {
                 if (x.PayrollNumbers.ToUpperInvariant().StartsWith(prefix))
-                    auto.Add(x.PayrollNumbers);
+                    autoComplete.Add("Payroll numbers - " + x.PayrollNumbers);
                 if (x.Name.ToUpperInvariant().StartsWith(prefix))
-                    auto.Add(x.Name);
-                if (x.DateOfBirth.ToUpperInvariant().StartsWith(prefix))
-                    auto.Add(x.DateOfBirth);
+                    autoComplete.Add("Name - " + x.Name);
+                if (x.DateOfBirth.ToString().ToUpperInvariant().StartsWith(prefix))
+                    autoComplete.Add("Date of birth - " + x.DateOfBirth.ToString());
                 if (x.TelephoneNumber.ToString().StartsWith(prefix))
-                    auto.Add(x.TelephoneNumber.ToString());
+                    autoComplete.Add("Telephone number - " + x.TelephoneNumber.ToString());
                 if (x.Mobile.ToString().StartsWith(prefix))
-                    auto.Add(x.Mobile.ToString());
+                    autoComplete.Add("Mobile - " + x.Mobile.ToString());
                 if (x.Address.ToUpperInvariant().StartsWith(prefix))
-                    auto.Add(x.Address);
+                    autoComplete.Add("Address - " + x.Address);
                 if (x.Address2.ToUpperInvariant().StartsWith(prefix))
-                    auto.Add(x.Address2);
+                    autoComplete.Add("Second address - " + x.Address2);
                 if (x.Email.ToUpperInvariant().StartsWith(prefix))
-                    auto.Add(x.Email);
+                    autoComplete.Add("Email - " + x.Email);
                 if (x.PostCode.ToUpperInvariant().StartsWith(prefix))
-                    auto.Add(x.PostCode);
-                if (x.StartDate.ToUpperInvariant().StartsWith(prefix))
-                    auto.Add(x.StartDate);
+                    autoComplete.Add("Postcode - " + x.PostCode);
+                if (x.StartDate.ToString().ToUpperInvariant().StartsWith(prefix))
+                    autoComplete.Add("Start date - " + x.StartDate);
             }));
 
-            return Json(auto);
+            return Json(autoComplete);
         }
 
         private static void ChangeName(ref string line)
